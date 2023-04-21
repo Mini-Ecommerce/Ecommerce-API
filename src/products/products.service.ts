@@ -79,6 +79,7 @@ export class ProductsService {
     if (!productToDelete) {
       throw new NotFoundException(`Product não encontrado`);
     }
+    await this.s3Service.deleteFile(productToDelete.imageUrl)
     await this.productModel.deleteOne({ _id: id }).exec();
     return { message: `Produto deletado com sucesso!` };
   }

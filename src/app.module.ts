@@ -15,7 +15,8 @@ import { ConfigModule } from '@nestjs/config';
     MongooseModule.forRoot(databaseConfig.uri),
     ConfigModule.forRoot({
       isGlobal: true
-    })
+    }),
+    
   ],
   controllers: [AppController],
   providers: [AppService],
