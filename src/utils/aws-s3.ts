@@ -25,4 +25,13 @@ export class S3Service {
     const { Location } = await this.s3.upload(params).promise();
     return Location;
   }
+
+  async deleteFile(url: string) {
+    const key = url.split('/').pop();
+    const params = {
+      Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
+      Key: key,
+    };
+    await this.s3.deleteObject(params).promise();
+  }
 }

@@ -4,24 +4,25 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Product } from './entities/product.entity';
 import { Model } from 'mongoose';
+import { S3Service } from 'src/utils/aws-s3';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectModel('Product') private readonly productModel: Model<Product>,
+    private readonly s3Service: S3Service,
   ) {}
 
-  async create(createProductDto: CreateProductDto) {
-    try {
-      const newProduct = new this.productModel(createProductDto);
-      await newProduct.save();
-    } catch {
-      throw new NotFoundException('Produto não foi adicionado por algum erro!');
-    }
-
-    return { message: 'Produto adicionado com sucesso' };
+  async create(createProductDto: CreateProductDto, imageUrl: string) {
+    const newProduct = new this.productModel({
+      ...createProductDto,
+      imageUrl,
+    });
+  
+    const savedProduct = await newProduct.save();
+    return { message: 'Produto adicionado com sucesso', Produto: savedProduct };
   }
-
+  
   async findAll() {
     try {
       const products = await this.productModel.find().exec();
@@ -40,22 +41,37 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+    file?: Express.Multer.File,
+  ) {
     Object.keys(updateProductDto).forEach(
       (key) => updateProductDto[key] === null && delete updateProductDto[key],
     );
 
-    const productToUpdate = await this.productModel.findByIdAndUpdate(
-      id,
-      { $set: updateProductDto },
-      { new: true },
-    );
+    const productToUpdate = await this.productModel.findById(id);
 
     if (!productToUpdate) {
       throw new NotFoundException('Produto não existe!');
     }
 
-    return productToUpdate;
+    if (productToUpdate.imageUrl) {
+      await this.s3Service.deleteFile(productToUpdate.imageUrl);
+    }
+
+    if (file) {
+      const imageUrl = await this.s3Service.uploadFile(file, 'products');
+      updateProductDto.imageUrl = imageUrl;
+    }
+
+    const updatedProduct = await this.productModel.findByIdAndUpdate(
+      id,
+      { $set: updateProductDto },
+      { new: true },
+    );
+
+    return updatedProduct;
   }
 
   async remove(id: string) {

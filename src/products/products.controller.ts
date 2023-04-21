@@ -1,4 +1,15 @@
-import { Controller,UseInterceptors, Get, Post, Body, Patch, Param, Delete, UseGuards, NestInterceptor, Type, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  UseInterceptors,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  UploadedFile,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -10,20 +21,23 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
-    private readonly s3Service:S3Service
-    ) {}
+    private readonly s3Service: S3Service,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-    async create(@UploadedFile() file:Express.Multer.File, @Body() createProductDto: CreateProductDto) {
-      const imageUrl = await this.s3Service.uploadFile(file, 'products')
-      const product = await this.productsService.create({
-        ...createProductDto,
-        imageUrl
-      })
-    
-      return product
+  async create(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createProductDto: CreateProductDto,
+  ) {
+    const imageUrl = await this.s3Service.uploadFile(file, 'products');
+    const result = await this.productsService.create(
+      createProductDto,
+      imageUrl,
+    );
+
+    return result;
   }
 
   @Get()
@@ -38,7 +52,12 @@ export class ProductsController {
 
   @UseGuards(AuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  @UseInterceptors(FileInterceptor('image'))
+  update(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
     return this.productsService.update(id, updateProductDto);
   }
 
@@ -48,5 +67,3 @@ export class ProductsController {
     return this.productsService.remove(id);
   }
 }
-
-
