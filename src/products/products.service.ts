@@ -20,19 +20,28 @@ export class ProductsService {
     
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll() {
+    const products = await this.productModel.find().exec()
+    return products.map((prod) => ({
+      id:prod.id,
+      name:prod.name,
+      description:prod.description,
+      price:prod.price,
+      variations:prod.variations
+    }))
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    
+    const product = await this.productModel.findById(id).exec()
+    return product
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
+  update(id: string, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} product`;
   }
 }
