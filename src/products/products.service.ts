@@ -5,6 +5,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Product } from './entities/product.entity';
 import { Model } from 'mongoose';
 
+
+
+
 @Injectable()
 export class ProductsService {
   constructor(
@@ -14,12 +17,12 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto) {
     try {
       const newProduct = new this.productModel(createProductDto);
-      await newProduct.save();      
-    } catch  {
-      throw new NotFoundException('Produto não foi adicionado por algum erro!')
+      await newProduct.save();
+    } catch {
+      throw new NotFoundException('Produto não foi adicionado por algum erro!');
     }
 
-    return {message: 'Produto adicionado com sucesso'}
+    return { message: 'Produto adicionado com sucesso' };
   }
 
   async findAll() {
@@ -29,17 +32,29 @@ export class ProductsService {
 
   async findOne(id: string) {
     const product = await this.productModel.findById(id).exec();
+
+    if(!product){
+      throw new NotFoundException('Produto não existe!')
+    }
     return product;
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
+    Object.keys(updateProductDto).forEach(
+      (key) => updateProductDto[key] === null && delete updateProductDto[key],
+    );
+
     const productToUpdate = await this.productModel.findByIdAndUpdate(
       id,
-      updateProductDto,
+      { $set: updateProductDto },
       { new: true },
     );
 
-    return productToUpdate
+    if(!productToUpdate){
+      throw new NotFoundException('Produto não existe!')
+    }
+
+    return productToUpdate;
   }
 
   async remove(id: string) {
@@ -50,5 +65,6 @@ export class ProductsService {
     await this.productModel.deleteOne({ _id: id }).exec();
     return { message: `Produto deletado com sucesso!` };
   }
-  
+
+
 }
