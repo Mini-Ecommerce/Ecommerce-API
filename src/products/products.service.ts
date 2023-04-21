@@ -5,9 +5,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Product } from './entities/product.entity';
 import { Model } from 'mongoose';
 
-
-
-
 @Injectable()
 export class ProductsService {
   constructor(
@@ -26,15 +23,19 @@ export class ProductsService {
   }
 
   async findAll() {
-    const products = await this.productModel.find().exec();
-    return products;
+    try {
+      const products = await this.productModel.find().exec();
+      return products;
+    } catch {
+      throw new NotFoundException('Não há produtos registrados ainda!');
+    }
   }
 
   async findOne(id: string) {
     const product = await this.productModel.findById(id).exec();
 
-    if(!product){
-      throw new NotFoundException('Produto não existe!')
+    if (!product) {
+      throw new NotFoundException('Produto não existe!');
     }
     return product;
   }
@@ -50,8 +51,8 @@ export class ProductsService {
       { new: true },
     );
 
-    if(!productToUpdate){
-      throw new NotFoundException('Produto não existe!')
+    if (!productToUpdate) {
+      throw new NotFoundException('Produto não existe!');
     }
 
     return productToUpdate;
@@ -65,6 +66,4 @@ export class ProductsService {
     await this.productModel.deleteOne({ _id: id }).exec();
     return { message: `Produto deletado com sucesso!` };
   }
-
-
 }
