@@ -15,6 +15,12 @@ export class Product {
     @Prop({required: true})
     price:number
 
+    @Prop({required:true})
+    stock:number
+
+    @Prop({require:true})
+    imageUrl:string
+    
     @Prop({required: true})
     variations:Variation[]
 }
