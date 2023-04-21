@@ -1,41 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Product } from './entities/product.entity';
 import { Model } from 'mongoose';
+import {IProductRepository} from '../repositories/IProductRepository'
 
 @Injectable()
 export class ProductsService {
-
   constructor(
-    @InjectModel('Product') private readonly productModel: Model<Product>
-  ){}
+    @Inject(IProductRepository) private productRepository: IProductRepository
+    ) {}
 
-  async create(createProductDto: CreateProductDto) {
+  async create(data: CreateProductDto) {
+    const product = new Product()
 
-    const newProduct = new this.productModel(createProductDto)
-    await newProduct.save()
-
-    
+    await this.productRepository.save(product)
   }
 
   async findAll() {
-    const products = await this.productModel.find().exec()
-    return products.map((prod) => ({
-      id:prod.id,
-      name:prod.name,
-      description:prod.description,
-      price:prod.price,
-      variations:prod.variations
-    }))
+    const products = await this.productRepository.findAllProducts()
+    return products
   }
 
-  async findOne(id: string) {
-    
-    const product = await this.productModel.findById(id).exec()
-    return product
-  }
+  async findOne(id: string) {}
 
   update(id: string, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
