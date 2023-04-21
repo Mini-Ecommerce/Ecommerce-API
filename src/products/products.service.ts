@@ -22,13 +22,7 @@ export class ProductsService {
 
   async findAll() {
     const products = await this.productModel.find().exec()
-    return products.map((prod) => ({
-      id:prod.id,
-      name:prod.name,
-      description:prod.description,
-      price:prod.price,
-      variations:prod.variations
-    }))
+    return products
   }
 
   async findOne(id: string) {
