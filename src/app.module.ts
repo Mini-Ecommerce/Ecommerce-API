@@ -7,11 +7,16 @@ import { ProductsModule } from './products/products.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { databaseConfig } from './config/database.config';
 import { MulterModule } from '@nestjs/platform-express';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [AuthModule, UsersModule, ProductsModule,
     MulterModule.register({dest:'./uploads'}),
-    MongooseModule.forRoot(databaseConfig.uri)],
+    MongooseModule.forRoot(databaseConfig.uri),
+    ConfigModule.forRoot({
+      isGlobal: true
+    })
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

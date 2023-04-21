@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller,UseInterceptors, Get, Post, Body, Patch, Param, Delete, UseGuards, NestInterceptor, Type, UploadedFile } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { S3Service } from 'src/utils/aws-s3';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('products')
 export class ProductsController {
@@ -14,8 +15,15 @@ export class ProductsController {
 
   @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+  @UseInterceptors(FileInterceptor('image'))
+    async create(@UploadedFile() file:Express.Multer.File, @Body() createProductDto: CreateProductDto) {
+      const imageUrl = await this.s3Service.uploadFile(file, 'products')
+      const product = await this.productsService.create({
+        ...createProductDto,
+        imageUrl
+      })
+    
+      return product
   }
 
   @Get()
@@ -40,3 +48,5 @@ export class ProductsController {
     return this.productsService.remove(id);
   }
 }
+
+
