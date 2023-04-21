@@ -12,7 +12,7 @@ export class AuthService {
   async signIn(username: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(username);
     if (user?.password !== pass) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Credenciais inválidas!');
     }
 
     const payload = { userId: user.userId , username: user.username};
@@ -24,12 +24,5 @@ export class AuthService {
   }
 
 
-  async validateToken(username:string, pass:string):Promise<any>{
-    const user = await this.userService.findOne(username)
-    if(user && user.password === pass) {
-      const {password, ...result} = user
-      return result
-    }
-    return null
-  }
+
 }
