@@ -83,4 +83,21 @@ export class ProductsService {
     await this.productModel.deleteOne({ _id: id }).exec();
     return { message: `Produto deletado com sucesso!` };
   }
+
+
+  async findAllPaginated(page = 1, limit = 10) {
+    const products = await this.productModel
+      .find()
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .exec();
+    const totalProducts = await this.productModel.countDocuments().exec();
+    const totalPages = Math.ceil(totalProducts / limit);
+    return {
+      data: products,
+      page,
+      totalPages,
+      totalProducts,
+    };
+  }
 }

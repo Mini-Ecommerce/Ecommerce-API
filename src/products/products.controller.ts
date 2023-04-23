@@ -9,6 +9,7 @@ import {
   Delete,
   UseGuards,
   UploadedFile,
+  Query
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -41,8 +42,11 @@ export class ProductsController {
   }
 
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  async findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    return this.productsService.findAllPaginated(+page, +limit);
   }
 
   @Get(':id')
